@@ -79,5 +79,5 @@ const CATEGORIES = [
 
 // Rellena estos dos valores con los de tu proyecto Supabase
 // (Configuración del proyecto -> API). Ver README para el paso a paso.
-const SUPABASE_URL = 'https://ukyxdpbccabrrqugofwl.supabase.co/rest/v1/';
+const SUPABASE_URL = 'https://ukyxdpbccabrrqugofwl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_QWpw3AO3QRNpIior8Zx15A_xD_gYXhY';
