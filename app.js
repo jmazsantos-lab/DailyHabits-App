@@ -28,7 +28,7 @@ window.addEventListener('unhandledrejection', (e) => {
 const QUEUE_KEY = 'habit_tracker_queue_v1';
 const DEVICE_KEY = 'habit_tracker_device_v1';
 
-let supabase = null;
+let db = null;
 let currentCategory = null;
 let statsPeriod = 'day';
 let donutChart = null;
@@ -135,8 +135,8 @@ async function logActivity(categoryId, activity, isCustom, note) {
   // Guarda localmente de inmediato para que las estadísticas se vean al instante
   allLogsCache.push({ ...entry, id: 'local-' + Date.now() });
 
-  if (navigator.onLine && supabase) {
-    const { error } = await supabase.from('activity_logs').insert(entry);
+  if (navigator.onLine && db) {
+    const { error } = await db.from('activity_logs').insert(entry);
     if (error) {
       console.error('Error al insertar, se encola:', error);
       const q = getQueue();
@@ -153,12 +153,12 @@ async function logActivity(categoryId, activity, isCustom, note) {
 }
 
 async function flushQueue() {
-  if (!navigator.onLine || !supabase) return;
+  if (!navigator.onLine || !db) return;
   const q = getQueue();
   if (q.length === 0) return;
   const remaining = [];
   for (const entry of q) {
-    const { error } = await supabase.from('activity_logs').insert(entry);
+    const { error } = await db.from('activity_logs').insert(entry);
     if (error) remaining.push(entry);
   }
   saveQueue(remaining);
@@ -169,7 +169,7 @@ async function flushQueue() {
 function updateSyncBadge() {
   const badge = document.getElementById('sync-badge');
   const q = getQueue();
-  if (!supabase) {
+  if (!db) {
     badge.textContent = '⚠️ Falta configurar Supabase en config.js';
   } else if (q.length > 0) {
     badge.textContent = `⏳ ${q.length} registro(s) pendientes de sincronizar`;
@@ -181,10 +181,10 @@ function updateSyncBadge() {
 }
 
 async function loadLogs() {
-  if (!supabase) return;
+  if (!db) return;
   const since = new Date();
   since.setDate(since.getDate() - 90); // suficiente para día/semana/mes + tendencia
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('activity_logs')
     .select('*')
     .gte('logged_at', since.toISOString())
@@ -790,17 +790,17 @@ function setupListeners() {
 
 async function init() {
   try {
-    supabase = initSupabase();
+    db = initSupabase();
   } catch (e) {
     console.error('Fallo al inicializar Supabase:', e);
-    supabase = null;
+    db = null;
   }
 
   setupListeners();
   renderHome(); // pinta las categorías de inmediato, con o sin Supabase
   updateSyncBadge();
 
-  if (supabase) {
+  if (db) {
     try {
       await loadLogs();
       await flushQueue();
@@ -821,14 +821,14 @@ async function init() {
 
   // Si Supabase todavía no había terminado de cargar desde su CDN,
   // reintenta un par de veces en segundo plano sin bloquear la app.
-  if (!supabase) {
+  if (!db) {
     [2000, 5000].forEach((delay) => {
       setTimeout(async () => {
-        if (supabase) return; // ya conectó en un intento anterior
+        if (db) return; // ya conectó en un intento anterior
         try {
           const client = initSupabase();
           if (client) {
-            supabase = client;
+            db = client;
             await loadLogs();
             await flushQueue();
             updateSyncBadge();

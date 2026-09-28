@@ -5,7 +5,7 @@
 // internet se guardan en localStorage y se envían a Supabase en
 // cuanto vuelve la conexión (ver app.js -> flushQueue).
 
-const CACHE_NAME = 'habit-tracker-v4';
+const CACHE_NAME = 'habit-tracker-v5';
 const APP_SHELL = [
   './',
   './index.html',
