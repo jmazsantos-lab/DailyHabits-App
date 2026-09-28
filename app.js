@@ -29,6 +29,7 @@ const QUEUE_KEY = 'habit_tracker_queue_v1';
 const DEVICE_KEY = 'habit_tracker_device_v1';
 
 let db = null;
+let lastSyncError = '';
 let currentCategory = null;
 let statsPeriod = 'day';
 let donutChart = null;
@@ -122,6 +123,21 @@ function saveQueue(queue) {
   localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
 }
 
+// Inserta en Supabase. Si la base de datos todavía no tiene la columna
+// "note" (migración pendiente), reintenta sin ese campo para no perder
+// el registro. Devuelve el error final (o null si se guardó).
+async function insertLog(entry) {
+  lastSyncError = '';
+  let { error } = await db.from('activity_logs').insert(entry);
+  if (error && /note/i.test((error.message || '') + (error.details || '') + (error.hint || ''))) {
+    const { note, ...sinNota } = entry;
+    ({ error } = await db.from('activity_logs').insert(sinNota));
+    if (!error) lastSyncError = 'Falta la columna "note" en Supabase: las notas no se guardan (ejecuta la migración SQL).';
+  }
+  if (error) lastSyncError = error.message || String(error);
+  return error;
+}
+
 async function logActivity(categoryId, activity, isCustom, note) {
   const entry = {
     category_id: categoryId,
@@ -136,7 +152,7 @@ async function logActivity(categoryId, activity, isCustom, note) {
   allLogsCache.push({ ...entry, id: 'local-' + Date.now() });
 
   if (navigator.onLine && db) {
-    const { error } = await db.from('activity_logs').insert(entry);
+    const error = await insertLog(entry);
     if (error) {
       console.error('Error al insertar, se encola:', error);
       const q = getQueue();
@@ -158,7 +174,7 @@ async function flushQueue() {
   if (q.length === 0) return;
   const remaining = [];
   for (const entry of q) {
-    const { error } = await db.from('activity_logs').insert(entry);
+    const error = await insertLog(entry);
     if (error) remaining.push(entry);
   }
   saveQueue(remaining);
@@ -172,7 +188,9 @@ function updateSyncBadge() {
   if (!db) {
     badge.textContent = '⚠️ Falta configurar Supabase en config.js';
   } else if (q.length > 0) {
-    badge.textContent = `⏳ ${q.length} registro(s) pendientes de sincronizar`;
+    badge.textContent = `⏳ ${q.length} registro(s) pendientes de sincronizar` + (lastSyncError ? ` — ${lastSyncError}` : '');
+  } else if (lastSyncError) {
+    badge.textContent = `⚠️ ${lastSyncError}`;
   } else if (!navigator.onLine) {
     badge.textContent = '📴 Sin conexión — se sincronizará al volver';
   } else {
@@ -189,8 +207,15 @@ async function loadLogs() {
     .select('*')
     .gte('logged_at', since.toISOString())
     .order('logged_at', { ascending: false });
-  if (!error && data) {
-    allLogsCache = data;
+  if (error) {
+    lastSyncError = error.message || String(error);
+    updateSyncBadge();
+    return;
+  }
+  if (data) {
+    // Los registros que aún no llegaron a Supabase se siguen mostrando
+    const pendientes = getQueue().map((e, i) => ({ ...e, id: 'pending-' + i }));
+    allLogsCache = data.concat(pendientes);
     renderHome();
     if (document.getElementById('view-stats').classList.contains('active')) renderStats();
   }
