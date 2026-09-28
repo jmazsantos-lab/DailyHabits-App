@@ -59,11 +59,19 @@ function hexToRgba(hex, alpha) {
 // ---------- Supabase ----------
 
 function initSupabase() {
-  if (!SUPABASE_URL || SUPABASE_URL.includes('PON_AQUI') || !window.supabase) {
+  const url = (SUPABASE_URL || '').trim();
+  const key = (SUPABASE_ANON_KEY || '').trim();
+
+  if (!url || url.includes('PON_AQUI') || !key || key.includes('PON_AQUI') || !window.supabase) {
     console.warn('Supabase no está configurado todavía (edita config.js).');
     return null;
   }
-  return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  try {
+    return window.supabase.createClient(url, key);
+  } catch (e) {
+    console.error('Error creando el cliente de Supabase. Revisa SUPABASE_URL en config.js:', e);
+    return null;
+  }
 }
 
 function getQueue() {
@@ -433,22 +441,35 @@ function setupListeners() {
 // ---------- Arranque ----------
 
 async function init() {
-  supabase = initSupabase();
+  try {
+    supabase = initSupabase();
+  } catch (e) {
+    console.error('Fallo al inicializar Supabase:', e);
+    supabase = null;
+  }
+
   setupListeners();
+  renderHome(); // pinta las categorías de inmediato, con o sin Supabase
   updateSyncBadge();
 
   if (supabase) {
-    await loadLogs();
-    await flushQueue();
-  } else {
-    renderHome();
+    try {
+      await loadLogs();
+      await flushQueue();
+    } catch (e) {
+      console.error('Fallo al sincronizar con Supabase, la app sigue en modo local:', e);
+    }
   }
 
-  handleUrlAutoLog();
+  try {
+    handleUrlAutoLog();
+  } catch (e) {
+    console.error('Fallo en el registro automático por URL:', e);
+  }
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('service-worker.js').catch((e) => console.warn('SW error', e));
   }
 }
 
-init();
+init().catch((e) => console.error('Fallo crítico al arrancar la app:', e));
