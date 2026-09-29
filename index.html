@@ -4,154 +4,37 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
   <title>Hábitos</title>
-
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#0F172A" />
-
-  <!-- iOS: instalación como app a pantalla completa -->
+  <meta name="theme-color" content="#F2F4F7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#090C12" media="(prefers-color-scheme: dark)" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Hábitos" />
   <link rel="apple-touch-icon" href="icon-192.png" />
-
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=4.0" />
 </head>
 <body>
-  <div id="app">
-    <!-- ================= VISTA: INICIO (categorías) ================= -->
-    <div class="view active" id="view-home">
-      <header>
-        <h1>Hábitos</h1>
-        <button class="icon-btn" id="btn-refresh" aria-label="Actualizar">↻</button>
-      </header>
-      <div class="sync-badge" id="sync-badge"></div>
-      <div class="category-grid" id="category-grid"></div>
-    </div>
-
-    <!-- ================= VISTA: ACTIVIDADES DE UNA CATEGORÍA ================= -->
-    <div class="view" id="view-activities">
-      <header>
-        <button class="icon-btn" id="btn-back-home" aria-label="Volver">←</button>
-        <h1>&nbsp;</h1>
-        <span style="width:42px"></span>
-      </header>
-      <div class="subheader">
-        <div class="cat-pill" id="activities-title"></div>
-      </div>
-      <div class="activity-list" id="activity-list"></div>
-    </div>
-
-    <!-- ================= VISTA: ESTADÍSTICAS ================= -->
-    <div class="view" id="view-stats">
-      <header>
-        <h1>Estadísticas</h1>
-        <button class="icon-btn" id="btn-refresh-stats" aria-label="Actualizar">↻</button>
-      </header>
-      <div class="stats-scroll">
-        <div class="period-tabs">
-          <button data-period="day" class="active">Hoy</button>
-          <button data-period="week">Semana</button>
-          <button data-period="month">Mes</button>
-        </div>
-
-        <div class="stat-card">
-          <h3>Distribución por categoría</h3>
-          <canvas id="chart-donut" height="220"></canvas>
-          <div class="legend-row" id="donut-legend"></div>
-        </div>
-
-        <div class="stat-card">
-          <h3 id="totals-title">Totales</h3>
-          <div id="totals-list"></div>
-        </div>
-
-        <div class="stat-card">
-          <h3>Mapa de calor mensual</h3>
-          <div class="heatmap-category-picker" id="heatmap-category-picker"></div>
-          <div class="heatmap-month-label" id="heatmap-month-label"></div>
-          <div class="heatmap-grid" id="heatmap-grid"></div>
-          <div class="heatmap-detail" id="heatmap-detail"></div>
-        </div>
-
-        <div class="stat-card">
-          <h3>Tendencia (últimos 14 días)</h3>
-          <canvas id="chart-trend" height="200"></canvas>
-        </div>
-
-        <div class="stat-card">
-          <h3>Patrones entre categorías</h3>
-          <div id="correlations-list"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ================= NAV INFERIOR ================= -->
-    <nav class="bottom-nav">
-      <button id="nav-home" class="active" data-view="view-home">
-        <span class="nav-icon">✅</span>Registrar
-      </button>
-      <button id="nav-stats" data-view="view-stats">
-        <span class="nav-icon">📊</span>Estadísticas
-      </button>
-    </nav>
+  <div class="shell">
+    <nav class="tabbar" id="tabbar" aria-label="Secciones"></nav>
+    <main class="main" id="main"></main>
   </div>
+  <div id="layer"></div>
 
-  <!-- Overlay de confirmación al registrar -->
-  <div class="confirm-overlay" id="confirm-overlay">
-    <div class="checkmark" id="confirm-checkmark">✓</div>
-    <div class="confirm-text" id="confirm-text">Registrado</div>
-    <div class="confirm-sub" id="confirm-sub"></div>
-  </div>
-
-  <!-- Modal para actividad personalizada -->
-  <div class="modal-overlay" id="modal-overlay">
-    <div class="modal-sheet">
-      <h3>Actividad personalizada</h3>
-      <input type="text" id="custom-input" placeholder="Ej. Organizar el garaje" maxlength="60" />
-      <input type="text" id="custom-note-input" placeholder="Nota (opcional)" maxlength="200" />
-      <div class="modal-actions">
-        <button class="btn-cancel" id="btn-cancel-custom">Cancelar</button>
-        <button class="btn-save" id="btn-save-custom">Registrar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal para nota rápida junto a una actividad predeterminada -->
-  <div class="modal-overlay" id="note-modal-overlay">
-    <div class="modal-sheet">
-      <h3 id="note-modal-title">Nota</h3>
-      <input type="text" id="note-input" placeholder="Ej. 5km, con Blanca, etc." maxlength="200" />
-      <div class="modal-actions">
-        <button class="btn-cancel" id="btn-cancel-note">Cancelar</button>
-        <button class="btn-save" id="btn-save-note">Registrar con nota</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Aviso de emergencia: se ejecuta de inmediato, sin depender de
-       ningún archivo externo. Si en 6 segundos la app todavía no ha
-       pintado las categorías, algo se quedó colgado (normalmente una
-       librería externa que no cargó) y lo avisamos en pantalla. -->
+  <!-- Aviso de emergencia independiente del resto de archivos -->
   <script>
     setTimeout(function () {
-      var grid = document.getElementById('category-grid');
-      if (grid && grid.children.length === 0) {
-        grid.innerHTML =
-          '<div style="grid-column:1/-1;background:#3B0F0F;border:1px solid #7F1D1D;color:#FCA5A5;border-radius:14px;padding:16px;font-size:13px;text-align:left;">' +
-          '<strong>La app no terminó de cargar.</strong><br><br>' +
-          'Cierra la app por completo y vuelve a abrirla. Si el problema sigue, envía una captura de esta pantalla.' +
-          '</div>';
+      var m = document.getElementById('main');
+      if (m && m.children.length === 0) {
+        m.innerHTML = '<div style="margin:24px 0;padding:16px;border-radius:14px;background:#FDECEC;color:#8A1C1C;font:14px -apple-system,sans-serif">' +
+          '<b>La app no terminó de cargar.</b><br><br>Cierra la app por completo y vuelve a abrirla. ' +
+          'Si sigue igual, comprueba en GitHub que están subidos app.js, config.js, styles.css y supabase.js, y envía una captura de esta pantalla.</div>';
       }
-    }, 6000);
+    }, 8000);
   </script>
 
-  <!-- Chart.js y Supabase están incluidos dentro del propio proyecto
-       (chart.umd.js / supabase.js), no se descargan de ningún CDN
-       externo. Esto evita fallos por redes que bloquean o interceptan
-       descargas de dominios externos. -->
-  <script src="chart.umd.js" defer></script>
   <script src="supabase.js" defer></script>
-  <script src="config.js" defer></script>
-  <script src="app.js" defer></script>
+  <script src="config.js?v=4.0" defer></script>
+  <script src="app.js?v=4.0" defer></script>
 </body>
 </html>
