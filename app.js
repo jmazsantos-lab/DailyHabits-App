@@ -1,5 +1,5 @@
 /* =========================================================
-   HÁBITOS v4 · app.js
+   ÓRBITA (hábitos) v4.2 · app.js
    Datos en Supabase (tablas activities, habit_logs, goals,
    goal_entries, profile_settings). Cada cambio se aplica al
    instante en pantalla, se guarda en una cola local y se envía
@@ -359,6 +359,7 @@ const ICON = {
   down: '<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   edit: '<svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>'
 };
+const BRAND_LOGO = `<svg class="brand-logo" viewBox="0 0 1024 1024" aria-hidden="true">   <g class="ring"><path class="arc a0" d="M424.3 225.1A300 300 0 0 1 599.7 225.1" stroke="#8B5CF6" stroke-width="96" stroke-linecap="round" fill="none" pathLength="100"/>   <path class="arc a1" d="M716.6 292.6A300 300 0 0 1 804.3 444.5" stroke="#10B981" stroke-width="96" stroke-linecap="round" fill="none" pathLength="100"/>   <path class="arc a2" d="M804.3 579.5A300 300 0 0 1 716.6 731.4" stroke="#EC4899" stroke-width="96" stroke-linecap="round" fill="none" pathLength="100"/>   <path class="arc a3" d="M599.7 798.9A300 300 0 0 1 424.3 798.9" stroke="#F59E0B" stroke-width="96" stroke-linecap="round" fill="none" pathLength="100"/>   <path class="arc a4" d="M307.4 731.4A300 300 0 0 1 219.7 579.5" stroke="#3B82F6" stroke-width="96" stroke-linecap="round" fill="none" pathLength="100"/>   <path class="arc a5" d="M219.7 444.5A300 300 0 0 1 307.4 292.6" stroke="#14B8A6" stroke-width="96" stroke-linecap="round" fill="none" pathLength="100"/></g>   <path class="chk" d="M404 520L480 596L632 440" stroke="currentColor" stroke-width="80" stroke-linecap="round" stroke-linejoin="round" fill="none" pathLength="100"/> </svg>`;
 const TABS = [
   ['hoy', 'Hoy', '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 12.3l2.7 2.7L16.5 9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>'],
   ['categorias', 'Categorías', '<svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/></svg>'],
@@ -375,10 +376,10 @@ const whoText = (w) => (w === 'ambos' ? 'José y Blanca' : PEOPLE[w].name);
 function render() {
   refreshToday();
   if (S.date > TODAY_S) S.date = TODAY_S;
-  $('#tabbar').innerHTML = `<div class="side-brand">Hábitos</div>` + TABS.map(([id, label, svg]) =>
+  $('#tabbar').innerHTML = `<div class="side-brand">${BRAND_LOGO}<span>${APP_NAME}</span></div>` + TABS.map(([id, label, svg]) =>
     `<button class="tab ${S.view === id || (id === 'categorias' && S.view === 'categoria') || (id === 'ajustes' && (S.view === 'gestionar' || S.view === 'atajos')) ? 'on' : ''}" data-act="nav" data-v="${id}">${svg}<span>${label}</span></button>`).join('');
   if (!S.loaded && !ACTS.length) {
-    $('#main').innerHTML = `<div class="top"><div><h1>Hábitos</h1></div>${syncChip()}</div>${globalBanners()}<div class="loading">${S.syncErr ? 'No se pudieron cargar los datos.' : 'Cargando tus hábitos…'}</div>`;
+    $('#main').innerHTML = `<div class="top"><div><h1>${APP_NAME}</h1></div>${syncChip()}</div>${globalBanners()}<div class="loading">${S.syncErr ? 'No se pudieron cargar los datos.' : 'Cargando tus hábitos…'}</div>`;
     return;
   }
   const views = { hoy: viewHoy, categorias: viewCats, categoria: viewCat, historial: viewHist, stats: viewStats, ajustes: viewAjustes, gestionar: viewManage, atajos: viewShortcuts };
@@ -695,7 +696,7 @@ function viewAjustes() {
   <div class="group"><div class="set-row"><span class="lab">Tema</span><div class="seg">${[['system', 'Sistema'], ['light', 'Claro'], ['dark', 'Oscuro']].map(([id, l]) => `<button class="${S.theme === id ? 'on' : ''}" data-act="theme" data-t="${id}">${l}</button>`).join('')}</div></div></div>
   <div class="sec-h"><h2>Datos</h2></div>
   <div class="group"><div class="set-row"><span class="lab">Sincronización</span>${syncChip()}</div><button class="set-row" data-act="sync"><span class="lab" style="color:var(--accent)">Actualizar ahora</span><span></span></button></div>
-  <p class="set-note">Hábitos v4.0</p>`;
+  <p class="set-note">${APP_NAME} v4.2</p>`;
 }
 function viewManage() {
   const blocks = CATS.map((c) => {
@@ -883,7 +884,7 @@ function celebrate(a, n) {
   const last = Array.from({ length: 14 }, (_, i) => status(a, p, ds(addDays(TODAY, i - 13))) === 'done');
   const el = document.createElement('div'); el.className = 'celebrate'; el.dataset.act = 'closecel';
   el.innerHTML = `<div class="cel-card" style="--c:${c}"><div class="big">🔥</div><h3>¡${n} días seguidos!</h3><div style="color:var(--muted)">${esc(a.name)} · logro «${n === 7 ? 'Primera semana' : n === 30 ? 'Un mes sin fallar' : 'Centenario'}» desbloqueado</div>
-    <div class="share"><div class="s-top"><span>${PEOPLE[p].name} · Hábitos</span><span>${TODAY.getDate()} ${MON3[TODAY.getMonth()]} ${TODAY.getFullYear()}</span></div><div class="s-n">${n} días</div><div>${a.icon} ${esc(a.name)}</div><div class="s-d">${last.map((on) => `<i class="${on ? 'on' : ''}"></i>`).join('')}</div></div>
+    <div class="share"><div class="s-top"><span>${PEOPLE[p].name} · ${APP_NAME}</span><span>${TODAY.getDate()} ${MON3[TODAY.getMonth()]} ${TODAY.getFullYear()}</span></div><div class="s-n">${n} días</div><div>${a.icon} ${esc(a.name)}</div><div class="s-d">${last.map((on) => `<i class="${on ? 'on' : ''}"></i>`).join('')}</div></div>
     <div class="actions"><button class="btn primary" data-act="closecel">Genial</button></div><p class="set-note" style="padding:8px 0 0">Para compartirla, haz una captura de pantalla.</p></div>`;
   document.body.appendChild(el); confetti(c);
 }

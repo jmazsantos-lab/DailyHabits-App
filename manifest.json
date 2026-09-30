@@ -1,12 +1,12 @@
 {
-  "name": "Hábitos",
-  "short_name": "Hábitos",
-  "description": "Registro rápido de hábitos con estadísticas, rachas y metas",
+  "name": "Órbita",
+  "short_name": "Órbita",
+  "description": "Tus seis áreas de vida, un hábito cada día",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#F2F4F7",
+  "background_color": "#0A0E17",
   "theme_color": "#F2F4F7",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

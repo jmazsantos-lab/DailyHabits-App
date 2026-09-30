@@ -4,6 +4,9 @@
 // reordenan y archivan desde la propia app (Ajustes → Actividades).
 // ============================================================
 
+// Nombre de la app (también en index.html y manifest.json)
+const APP_NAME = 'Órbita';
+
 // Datos de tu proyecto Supabase (Project Settings → API)
 const SUPABASE_URL = 'https://ukyxdpbccabrrqugofwl.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_QWpw3AO3QRNpIior8Zx15A_xD_gYXhY';

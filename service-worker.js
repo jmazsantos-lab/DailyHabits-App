@@ -1,9 +1,9 @@
 // Service worker de Hábitos v4.
 // Red primero (para recibir siempre la última versión) y caché como
 // respaldo sin conexión. Nunca cachea las llamadas a Supabase.
-const CACHE_NAME = 'habitos-v4.0';
+const CACHE_NAME = 'habitos-v4.2';
 const APP_SHELL = [
-  './', './index.html', './styles.css?v=4.0', './config.js?v=4.0', './app.js?v=4.0',
+  './', './index.html', './styles.css?v=4.2', './config.js?v=4.2', './app.js?v=4.2', './logo.svg', './apple-touch-icon.png',
   './supabase.js', './manifest.json', './icon-192.png', './icon-512.png'
 ];
 

@@ -1,4 +1,4 @@
-# Hábitos v4
+# Órbita · hábitos v4.2
 
 App web instalable (PWA) para registrar hábitos en iPhone y iPad, sincronizada entre José y Blanca mediante Supabase.
 
@@ -12,7 +12,7 @@ App web instalable (PWA) para registrar hábitos en iPhone y iPad, sincronizada 
 | `config.js` | URL y clave de Supabase, personas y categorías |
 | `supabase.js` | Librería de Supabase (incluida, sin depender de internet) |
 | `service-worker.js` | Funcionamiento sin conexión y actualizaciones |
-| `manifest.json` + iconos | Instalación en la pantalla de inicio |
+| `manifest.json`, iconos, `apple-touch-icon.png`, `logo.svg` | Instalación en la pantalla de inicio y logotipo |
 | `supabase-v4.sql` | Script que se ejecuta una vez en Supabase → SQL Editor |
 
 ## Instalación

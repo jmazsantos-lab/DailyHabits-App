@@ -1,5 +1,5 @@
 -- ============================================================
--- HÁBITOS v4 · Script de base de datos
+-- ÓRBITA (hábitos) v4 · Script de base de datos
 -- Ejecútalo UNA vez en Supabase → SQL Editor → New query → Run.
 -- Se puede volver a ejecutar sin duplicar nada.
 -- No borra la tabla antigua (activity_logs): queda como copia de
@@ -123,6 +123,14 @@ on conflict (id) do nothing;
 
 -- ---------- 7. Copiar los registros de la versión anterior ----------
 -- Todos se asignan a José (la versión anterior no distinguía personas).
+-- 7.0 La tabla antigua puede no tener la columna «note»: se añade si falta.
+do $$
+begin
+  if to_regclass('public.activity_logs') is not null then
+    alter table activity_logs add column if not exists note text;
+  end if;
+end $$;
+
 do $$
 begin
   if to_regclass('public.activity_logs') is not null then
